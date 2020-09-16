@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:time_range_picker/src/clock-gesture-recognizer.dart';
 import 'package:time_range_picker/src/clock-painter.dart';
 import 'package:time_range_picker/src/utils.dart';
 
@@ -104,11 +103,9 @@ showTimeRangePicker({
   /// TextStyle of the currently moving time text
   TextStyle activeTimeTextStyle,
 
+  String message="",
   /// hide the time texts
   bool hideTimes = false,
-
-  /// hide the button bar
-  bool hideButtons = false,
   TransitionBuilder builder,
   bool useRootNavigator = true,
   RouteSettings routeSettings,
@@ -117,42 +114,41 @@ showTimeRangePicker({
   assert(useRootNavigator != null);
   assert(debugCheckHasMaterialLocalizations(context));
 
-  final Widget dialog = Dialog(
-      elevation: 12,
-      child: TimeRangePicker(
-        start: start,
-        end: end,
-        disabledTime: disabledTime,
-        paintingStyle: paintingStyle,
-        onStartChange: onStartChange,
-        onEndChange: onEndChange,
-        fromText: fromText,
-        toText: toText,
-        interval: interval,
-        padding: padding,
-        strokeWidth: strokeWidth,
-        handlerRadius: handlerRadius,
-        strokeColor: strokeColor,
-        handlerColor: handlerColor,
-        selectedColor: selectedColor,
-        backgroundColor: backgroundColor,
-        disabledColor: disabledColor,
-        backgroundWidget: backgroundWidget,
-        ticks: ticks,
-        ticksLength: ticksLength,
-        ticksWidth: ticksWidth,
-        ticksOffset: ticksOffset,
-        ticksColor: ticksColor,
-        snap: snap,
-        labels: labels,
-        labelOffset: labelOffset,
-        rotateLabels: rotateLabels,
-        autoAdjustLabels: autoAdjustLabels,
-        labelStyle: labelStyle,
-        timeTextStyle: timeTextStyle,
-        activeTimeTextStyle: activeTimeTextStyle,
-        hideTimes: hideTimes,
-      ));
+  final Widget dialog = _TimeRangePicker(
+    start: start,
+    end: end,
+    disabledTime: disabledTime,
+    paintingStyle: paintingStyle,
+    onStartChange: onStartChange,
+    onEndChange: onEndChange,
+    fromText: fromText,
+    toText: toText,
+    interval: interval,
+    padding: padding,
+    strokeWidth: strokeWidth,
+    handlerRadius: handlerRadius,
+    strokeColor: strokeColor,
+    handlerColor: handlerColor,
+    selectedColor: selectedColor,
+    backgroundColor: backgroundColor,
+    disabledColor: disabledColor,
+    backgroundWidget: backgroundWidget,
+    ticks: ticks,
+    ticksLength: ticksLength,
+    ticksWidth: ticksWidth,
+    ticksOffset: ticksOffset,
+    ticksColor: ticksColor,
+    snap: snap,
+    labels: labels,
+    labelOffset: labelOffset,
+    rotateLabels: rotateLabels,
+    autoAdjustLabels: autoAdjustLabels,
+    labelStyle: labelStyle,
+    timeTextStyle: timeTextStyle,
+    activeTimeTextStyle: activeTimeTextStyle,
+    hideTimes: hideTimes,
+    message: message,
+  );
 
   return await showDialog<TimeRange>(
     context: context,
@@ -164,7 +160,7 @@ showTimeRangePicker({
   );
 }
 
-class TimeRangePicker extends StatefulWidget {
+class _TimeRangePicker extends StatefulWidget {
   final TimeOfDay start;
   final TimeOfDay end;
 
@@ -211,10 +207,12 @@ class TimeRangePicker extends StatefulWidget {
   final TextStyle activeTimeTextStyle;
 
   final bool hideTimes;
-  final bool hideButtons;
 
-  TimeRangePicker({
+  final String message;
+
+  _TimeRangePicker({
     Key key,
+    this.message="message",
     this.start,
     this.end,
     this.disabledTime,
@@ -246,22 +244,19 @@ class TimeRangePicker extends StatefulWidget {
     this.labelStyle,
     this.timeTextStyle,
     this.activeTimeTextStyle,
-    hideTimes,
-    hideButtons,
-  })  : hideTimes = hideTimes == null ? false : hideTimes,
-        hideButtons = hideButtons == null ? false : hideButtons,
-        super(key: key);
+    this.hideTimes,
+  }) : super(key: key);
 
   @override
   _TimeRangePickerState createState() => _TimeRangePickerState();
 }
 
-class _TimeRangePickerState extends State<TimeRangePicker>
+class _TimeRangePickerState extends State<_TimeRangePicker>
     with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   ActiveTime _activeTime;
   double _startAngle = 0;
   double _endAngle = 0;
-
+  //String message;    //adkjhcksahlchlkajclksjlkklnslkanzdknsaklcnklsncl
   double _disabledStartAngle;
   double _disabledEndAngle;
 
@@ -271,7 +266,6 @@ class _TimeRangePickerState extends State<TimeRangePicker>
   TimeOfDay _startTime;
   TimeOfDay _endTime;
   double _radius = 50;
-
   @override
   void initState() {
     WidgetsBinding.instance.addObserver(this);
@@ -279,7 +273,7 @@ class _TimeRangePickerState extends State<TimeRangePicker>
     var endTime = widget.end ??
         startTime.replacing(
             hour:
-                startTime.hour < 21 ? startTime.hour + 3 : startTime.hour - 21);
+            startTime.hour < 21 ? startTime.hour + 3 : startTime.hour - 21);
 
     _startTime = _roundMinutes(startTime.hour * 60 + startTime.minute * 1.0);
     _startAngle = timeToAngle(_startTime);
@@ -326,16 +320,15 @@ class _TimeRangePickerState extends State<TimeRangePicker>
 
   TimeOfDay _roundMinutes(double min) {
     int roundedMin =
-        ((min / widget.interval.inMinutes).round() * widget.interval.inMinutes);
+    ((min / widget.interval.inMinutes).round() * widget.interval.inMinutes);
 
     int hours = (roundedMin / 60).floor();
     int minutes = (roundedMin % 60).round();
     return TimeOfDay(hour: hours, minute: minutes);
   }
 
-  bool _panStart(PointerDownEvent ev) {
-    bool isHandler = false;
-    var globalPoint = ev.position;
+  void _panStart(DragStartDetails details) {
+    var globalPoint = details.globalPosition;
     var snap = widget.handlerRadius * 2.5;
     RenderBox circle = _circleKey.currentContext.findRenderObject();
 
@@ -346,11 +339,11 @@ class _TimeRangePickerState extends State<TimeRangePicker>
       setState(() {
         _activeTime = ActiveTime.Start;
       });
-      return false;
+      return;
     }
 
     Offset globalStartOffset =
-        circle.localToGlobal(_clockPainter.startHandlerPosition);
+    circle.localToGlobal(_clockPainter.startHandlerPosition);
     if (globalPoint.dx < globalStartOffset.dx + snap &&
         globalPoint.dx > globalStartOffset.dx - snap &&
         globalPoint.dy < globalStartOffset.dy + snap &&
@@ -358,18 +351,17 @@ class _TimeRangePickerState extends State<TimeRangePicker>
       setState(() {
         _activeTime = ActiveTime.Start;
       });
-      isHandler = true;
     }
 
     if (_clockPainter.endHandlerPosition == null) {
       setState(() {
         _activeTime = ActiveTime.End;
       });
-      return false;
+      return;
     }
 
     Offset globalEndOffset =
-        circle.localToGlobal(_clockPainter.endHandlerPosition);
+    circle.localToGlobal(_clockPainter.endHandlerPosition);
 
     if (globalPoint.dx < globalEndOffset.dx + snap &&
         globalPoint.dx > globalEndOffset.dx - snap &&
@@ -378,24 +370,21 @@ class _TimeRangePickerState extends State<TimeRangePicker>
       setState(() {
         _activeTime = ActiveTime.End;
       });
-      isHandler = true;
     }
-
-    return isHandler;
   }
 
-  void _panUpdate(PointerMoveEvent ev) {
+  void _panUpdate(DragUpdateDetails details) {
     if (_activeTime == null) return;
     RenderBox circle = _circleKey.currentContext.findRenderObject();
     final center = circle.size.center(Offset.zero);
-    final point = circle.globalToLocal(ev.position);
+    final point = circle.globalToLocal(details.globalPosition);
     final touchPositionFromCenter = point - center;
     var dir = normalizeAngle(touchPositionFromCenter.direction);
 
     //check disabled
     if (widget.disabledTime != null) {
       var disabledStanEnd =
-          standardizeToOffsetAngle(_disabledEndAngle, _disabledStartAngle);
+      standardizeToOffsetAngle(_disabledEndAngle, _disabledStartAngle);
       var stanDir = standardizeToOffsetAngle(dir, _disabledStartAngle);
 
       if (_activeTime == ActiveTime.Start) {
@@ -407,7 +396,7 @@ class _TimeRangePickerState extends State<TimeRangePicker>
         }
       } else {
         var stanStart =
-            standardizeToOffsetAngle(_startAngle, _disabledStartAngle);
+        standardizeToOffsetAngle(_startAngle, _disabledStartAngle);
 
         if (isBetweenAngle(0, disabledStanEnd, stanDir) ||
             stanDir < stanStart) {
@@ -416,10 +405,7 @@ class _TimeRangePickerState extends State<TimeRangePicker>
       }
     }
 
-    var time = _angleToTime(dir);
-
-    //24 => 0
-    if (time.hour == 24) time = TimeOfDay(hour: 0, minute: time.minute);
+    final time = _angleToTime(dir);
 
     // snap to interval
     final angle = widget.snap == true ? timeToAngle(time) : dir;
@@ -437,13 +423,13 @@ class _TimeRangePickerState extends State<TimeRangePicker>
     var normalisedMin = min >= 0 ? min : 2 * pi + min;
     var normalisedMax = max >= 0 ? max : 2 * pi + max;
     var normalisedTarget =
-        targetAngle >= 0 ? targetAngle : 2 * pi + targetAngle;
+    targetAngle >= 0 ? targetAngle : 2 * pi + targetAngle;
 
     return normalisedMin <= normalisedTarget &&
         normalisedTarget <= normalisedMax;
   }
 
-  void _panEnd(PointerUpEvent ev) {
+  void _panEnd(DragEndDetails details) {
     setState(() {
       _activeTime = null;
     });
@@ -466,6 +452,7 @@ class _TimeRangePickerState extends State<TimeRangePicker>
   }
 
   _submit() {
+
     Navigator.of(context)
         .pop(TimeRange(startTime: _startTime, endTime: _endTime));
   }
@@ -477,61 +464,63 @@ class _TimeRangePickerState extends State<TimeRangePicker>
   @override
   Widget build(BuildContext context) {
     final MaterialLocalizations localizations =
-        MaterialLocalizations.of(context);
+    MaterialLocalizations.of(context);
     final ThemeData themeData = Theme.of(context);
 
-    return OrientationBuilder(
-      builder: (_, orientation) => orientation == Orientation.portrait
-          ? Column(
-              key: _wrapperKey,
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                if (!widget.hideTimes) buildHeader(false),
-                Stack(
-                    //fit: StackFit.loose,
-                    alignment: Alignment.center,
-                    children: [
-                      if (widget.backgroundWidget != null)
-                        widget.backgroundWidget,
-                      buildTimeRange(
-                          localizations: localizations, themeData: themeData)
-                    ]),
-                if (!widget.hideButtons)
-                  buildButtonBar(localizations: localizations)
-              ],
-            )
-          : Row(
-              children: [
-                if (!widget.hideTimes) buildHeader(true),
-                Expanded(
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          key: _wrapperKey,
-                          width: double.infinity,
-                          child: Stack(alignment: Alignment.center, children: [
-                            if (widget.backgroundWidget != null)
-                              widget.backgroundWidget,
-                            buildTimeRange(
-                                localizations: localizations,
-                                themeData: themeData)
-                          ]),
-                        ),
-                      ),
-                      if (!widget.hideButtons)
-                        buildButtonBar(localizations: localizations)
-                    ],
+    return Dialog(
+      elevation: 12,
+      child: OrientationBuilder(
+        builder: (_, orientation) => orientation == Orientation.portrait
+            ? Column(
+          key: _wrapperKey,
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            if (!widget.hideTimes) _buildHeader(false),
+            Stack(
+              //fit: StackFit.loose,
+                alignment: Alignment.center,
+                children: [
+                  if (widget.backgroundWidget != null)
+                    widget.backgroundWidget,
+                  _buildTimeRange(
+                      localizations: localizations, themeData: themeData)
+                ]),
+            _buildButtonBar(localizations: localizations)
+          ],
+        )
+            : Row(
+          children: [
+            if (!widget.hideTimes) _buildHeader(true),
+            Expanded(
+              child: Column(
+                children: [
+                  Expanded(
+                    child: Container(
+                      key: _wrapperKey,
+                      width: double.infinity,
+                      child:
+                      Stack(alignment: Alignment.center, children: [
+                        if (widget.backgroundWidget != null)
+                          widget.backgroundWidget,
+                        _buildTimeRange(
+                            localizations: localizations,
+                            themeData: themeData)
+                      ]),
+                    ),
                   ),
-                ),
-              ],
+                  _buildButtonBar(localizations: localizations)
+                ],
+              ),
             ),
+          ],
+        ),
+      ),
     );
   }
 
-  Widget buildButtonBar({@required MaterialLocalizations localizations}) =>
+  Widget _buildButtonBar({@required MaterialLocalizations localizations}) =>
       ButtonBar(
         children: <Widget>[
           FlatButton(
@@ -545,18 +534,13 @@ class _TimeRangePickerState extends State<TimeRangePicker>
         ],
       );
 
-  Widget buildTimeRange(
-          {@required MaterialLocalizations localizations,
-          @required ThemeData themeData}) =>
-      RawGestureDetector(
-        gestures: <Type, GestureRecognizerFactory>{
-          ClockGestureRecognizer:
-              GestureRecognizerFactoryWithHandlers<ClockGestureRecognizer>(
-            () => ClockGestureRecognizer(
-                panStart: _panStart, panUpdate: _panUpdate, panEnd: _panEnd),
-            (ClockGestureRecognizer instance) {},
-          ),
-        },
+  Widget _buildTimeRange(
+      {@required MaterialLocalizations localizations,
+        @required ThemeData themeData}) =>
+      GestureDetector(
+        onPanStart: _panStart,
+        onPanUpdate: _panUpdate,
+        onPanEnd: _panEnd,
         child: AspectRatio(
           aspectRatio: 1,
           child: Container(
@@ -576,10 +560,10 @@ class _TimeRangePickerState extends State<TimeRangePicker>
                   strokeColor: widget.strokeColor ?? themeData.primaryColor,
                   handlerColor: widget.handlerColor ?? themeData.primaryColor,
                   selectedColor:
-                      widget.selectedColor ?? themeData.primaryColorLight,
+                  widget.selectedColor ?? themeData.primaryColorLight,
                   backgroundColor: widget.backgroundColor ?? Colors.grey[200],
                   disabledColor:
-                      widget.disabledColor ?? Colors.red.withOpacity(0.5),
+                  widget.disabledColor ?? Colors.red.withOpacity(0.5),
                   paintingStyle: widget.paintingStyle ?? PaintingStyle.stroke,
                   ticks: widget.ticks,
                   ticksColor: widget.ticksColor ?? Colors.white,
@@ -588,7 +572,7 @@ class _TimeRangePickerState extends State<TimeRangePicker>
                   ticksOffset: widget.ticksOffset ?? 0,
                   labels: widget.labels,
                   labelStyle:
-                      widget.labelStyle ?? themeData.textTheme.bodyText1,
+                  widget.labelStyle ?? themeData.textTheme.bodyText1,
                   labelOffset: widget.labelOffset ?? 20,
                   rotateLabels: widget.rotateLabels ?? true,
                   autoAdjustLabels: widget.autoAdjustLabels ?? true,
@@ -600,7 +584,7 @@ class _TimeRangePickerState extends State<TimeRangePicker>
         ),
       );
 
-  Widget buildHeader(bool landscape) {
+  Widget _buildHeader(bool landscape) {
     final ThemeData themeData = Theme.of(context);
 
     Color backgroundColor;
@@ -627,48 +611,64 @@ class _TimeRangePickerState extends State<TimeRangePicker>
     }
 
     return Container(
-      color: backgroundColor,
+      color: Colors.black,
       padding: EdgeInsets.all(24),
       child: Flex(
         direction: landscape ? Axis.vertical : Axis.horizontal,
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           Column(
-            children: [
-              Text(widget.fromText, style: TextStyle(color: activeColor)),
-              Text(
-                _startTime != null ? _startTime.format(context) : "-",
-                style: _activeTime == ActiveTime.Start
-                    ? widget.activeTimeTextStyle ??
-                        TextStyle(
-                            color: activeColor,
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold)
-                    : widget.timeTextStyle ??
-                        TextStyle(
-                            color: inactiveColor,
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold),
+            children: <Widget>[
+              Row(
+                children: <Widget>[
+                  Column(
+                    children: [
+                      Text(widget.fromText, style: TextStyle(color: activeColor)),
+                      Text(
+                        _startTime != null ? _startTime.format(context) : "-",
+                        style: _activeTime == ActiveTime.Start
+                            ? widget.activeTimeTextStyle ??
+                            TextStyle(
+                                color: activeColor,
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold)
+                            : widget.timeTextStyle ??
+                            TextStyle(
+                                color: inactiveColor,
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  SizedBox(width: 20,),
+                  Column(children: [
+                    Text(widget.toText, style: TextStyle(color: activeColor)),
+                    Text(
+                      _endTime != null ? _endTime.format(context) : "-",
+                      style: _activeTime == ActiveTime.End
+                          ? widget.activeTimeTextStyle ??
+                          TextStyle(
+                              color: activeColor,
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold)
+                          : widget.timeTextStyle ??
+                          TextStyle(
+                              color: inactiveColor,
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold),
+                    ),
+
+                  ]),
+                ],
               ),
+
+              Text(widget.message ?? "", style: TextStyle(color: Colors.redAccent)),
             ],
+
           ),
-          Column(children: [
-            Text(widget.toText, style: TextStyle(color: activeColor)),
-            Text(
-              _endTime != null ? _endTime.format(context) : "-",
-              style: _activeTime == ActiveTime.End
-                  ? widget.activeTimeTextStyle ??
-                      TextStyle(
-                          color: activeColor,
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold)
-                  : widget.timeTextStyle ??
-                      TextStyle(
-                          color: inactiveColor,
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold),
-            ),
-          ])
+
+
+
         ],
       ),
     );
