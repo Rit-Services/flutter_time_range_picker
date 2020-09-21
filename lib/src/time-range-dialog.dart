@@ -671,12 +671,10 @@ class _TimeRangePickerState extends State<_TimeRangePicker>
                 ],
               ),
 
-              Row(
-                children: <Widget>[
-                  Text(widget.message ?? "",overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.redAccent,)),
 
-                ],
-              )
+              Text(widget.message ?? "",overflow: TextOverflow.ellipsis,textAlign: TextAlign.center, style: TextStyle(color: Colors.redAccent,)),
+
+
               ],)
             ],
     ),);
