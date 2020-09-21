@@ -275,6 +275,8 @@ class _TimeRangePickerState extends State<_TimeRangePicker>
   TimeOfDay _startTime;
   TimeOfDay _endTime;
   double _radius = 50;
+
+
   @override
   void initState() {
     WidgetsBinding.instance.addObserver(this);
@@ -594,6 +596,7 @@ class _TimeRangePickerState extends State<_TimeRangePicker>
       );
 
   Widget _buildHeader(bool landscape) {
+    MaterialLocalizations localizations = MaterialLocalizations.of(context);
     final ThemeData themeData = Theme.of(context);
 
     Color backgroundColor;
@@ -634,7 +637,7 @@ class _TimeRangePickerState extends State<_TimeRangePicker>
                     children: [
                       Text(widget.fromText, style: TextStyle(color: activeColor)),
                       Text(
-                        _startTime != null ? _startTime.format(context) : "-",
+                        _startTime != null ? localizations.formatTimeOfDay(_startTime , alwaysUse24HourFormat: true) : "-",
                         style: _activeTime == ActiveTime.Start
                             ? widget.activeTimeTextStyle ??
                             TextStyle(
@@ -653,7 +656,7 @@ class _TimeRangePickerState extends State<_TimeRangePicker>
                   Column(children: [
                     Text(widget.toText, style: TextStyle(color: activeColor)),
                     Text(
-                      _endTime != null ? _endTime.format(context) : "-",
+                      _endTime != null ? localizations.formatTimeOfDay(_endTime , alwaysUse24HourFormat: true) : "-",
                       style: _activeTime == ActiveTime.End
                           ? widget.activeTimeTextStyle ??
                           TextStyle(
