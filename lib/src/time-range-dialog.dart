@@ -679,13 +679,6 @@ class _TimeRangePickerState extends State<_TimeRangePicker>
               )
               ],)
             ],
-
-          ),
-
-
-
-        ],
-      ),
-    );
+    ),);
   }
 }
