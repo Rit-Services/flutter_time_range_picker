@@ -7,6 +7,9 @@ import 'package:time_range_picker/src/utils.dart';
 showTimeRangePicker({
   BuildContext context,
 
+  String cancelLbl = "Cancel",
+  String okLbl = "Ok",
+
   /// preselected start time
   TimeOfDay start,
 
@@ -148,6 +151,7 @@ showTimeRangePicker({
     activeTimeTextStyle: activeTimeTextStyle,
     hideTimes: hideTimes,
     message: message,
+    cancelLbl : cancelLbl,
   );
 
   return await showDialog<TimeRange>(
@@ -209,9 +213,13 @@ class _TimeRangePicker extends StatefulWidget {
   final bool hideTimes;
 
   final String message;
+  final String cancelLbl;
+  final String okLbl;
 
   _TimeRangePicker({
     Key key,
+    this.cancelLbl="Cancel",
+    this.okLbl = "Ok",
     this.message="message",
     this.start,
     this.end,
@@ -524,11 +532,11 @@ class _TimeRangePickerState extends State<_TimeRangePicker>
       ButtonBar(
         children: <Widget>[
           FlatButton(
-            child: Text(localizations.cancelButtonLabel),
+            child: Text(widget.cancelLbl),
             onPressed: _cancel,
           ),
           FlatButton(
-            child: Text(localizations.okButtonLabel),
+            child: Text(widget.okLbl),
             onPressed: _submit,
           ),
         ],

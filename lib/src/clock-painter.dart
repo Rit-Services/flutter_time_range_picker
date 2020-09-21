@@ -38,6 +38,8 @@ class ClockPainter extends CustomPainter {
   bool autoAdjustLabels;
   TextPainter _textPainter;
   String message;
+  String cancelLbl;
+  String okLbl;
   get startHandlerPosition {
     return _startHandlerPosition;
   }
@@ -48,6 +50,8 @@ class ClockPainter extends CustomPainter {
 
   ClockPainter(
       {@required this.startAngle,
+        @required this.cancelLbl,
+        @required this.okLbl,
         @required this.message,
       @required this.endAngle,
       @required this.disabledStartAngle,
