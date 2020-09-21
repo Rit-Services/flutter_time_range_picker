@@ -671,7 +671,7 @@ class _TimeRangePickerState extends State<_TimeRangePicker>
                 ],
               ),
 
-              Text(widget.message ?? "", style: TextStyle(color: Colors.redAccent)),
+              Center(child: Text(widget.message ?? "", style: TextStyle(color: Colors.redAccent,))),
             ],
 
           ),
