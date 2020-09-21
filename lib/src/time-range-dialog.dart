@@ -107,6 +107,7 @@ showTimeRangePicker({
   TextStyle activeTimeTextStyle,
 
   String message="",
+  String lang = "",
   /// hide the time texts
   bool hideTimes = false,
   TransitionBuilder builder,
@@ -153,6 +154,7 @@ showTimeRangePicker({
     message: message,
     cancelLbl : cancelLbl,
     okLbl: okLbl,
+    lang: lang,
   );
 
   return await showDialog<TimeRange>(
@@ -168,6 +170,7 @@ showTimeRangePicker({
 class _TimeRangePicker extends StatefulWidget {
   final TimeOfDay start;
   final TimeOfDay end;
+  final String lang;
 
   final TimeRange disabledTime;
 
@@ -219,6 +222,7 @@ class _TimeRangePicker extends StatefulWidget {
 
   _TimeRangePicker({
     Key key,
+    this.lang="",
     this.cancelLbl="Cancel",
     this.okLbl = "Ok",
     this.message="message",
@@ -656,7 +660,7 @@ class _TimeRangePickerState extends State<_TimeRangePicker>
                   Column(children: [
                     Text(widget.toText, style: TextStyle(color: activeColor)),
                     Text(
-                      _endTime != null ? localizations.formatTimeOfDay(_endTime , alwaysUse24HourFormat: true) : "-",
+                      widget.lang == "de_DE" ? (_endTime != null ? localizations.formatTimeOfDay(_endTime , alwaysUse24HourFormat: true) : "-") : (_endTime!=null ? _endTime.format(context) : "-"),
                       style: _activeTime == ActiveTime.End
                           ? widget.activeTimeTextStyle ??
                           TextStyle(
