@@ -152,6 +152,7 @@ showTimeRangePicker({
     hideTimes: hideTimes,
     message: message,
     cancelLbl : cancelLbl,
+    okLbl: okLbl,
   );
 
   return await showDialog<TimeRange>(
